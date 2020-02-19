@@ -35,13 +35,25 @@ inline int single_machine_instance::avaliar_solucao(vector<int> x){
 	}
 
 	int
-		C_time = 0, // completion time acumulado
-		fo = 0;		// valor de função objetivo
+		C_time = d, // completion time acumulado
+		fo = 0,		// valor de função objetivo
+		fo_antiga = 0,	//valor de fo da ultima iteracao
+		delta,	// melhora do valor de fo
+		j = 0;	//iterador auxiliar para "mover uma posição para trás"
 
-	for (int i = 0; i < n; i++){
-		C_time += p[x[i]];
-		fo += a[x[i]] * (max(0, d - C_time), b[x[i]] * max(0, C_time - d));
-	}
+	do { 
+		fo = 0;
+		for (int i = 0; i < n; i++) {
+			C_time += p[x[i]];
+			fo += a[x[i]] * (max(0, d - C_time), b[x[i]] * max(0, C_time - d));
+		}
+		delta = fo - fo_antiga;
+		fo_antiga = fo;
+		C_time -= p[x[j]];
+		if (C_time < 0)
+			C_time = 0;
+	} while (delta < 0);
+	//O(n^2) no pior caso 
 
 	return fo;
 }
