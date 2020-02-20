@@ -22,6 +22,14 @@ int main() {
 	vector<single_machine_instance>
 		INSTANCIA; //Vetor com as instâncias que estão no arquivo
 
+	
+	p = { 7, 1, 18, 6, 13, 14, 5, 6 };
+	a = { 2, 8, 4, 9, 5, 5, 7, 4 };
+	b = { 14, 7, 8, 9, 7, 9, 5, 14 };
+	n = 8;
+	single_machine_instance EXEMPLO(n, 14, p, a, b, 1, 0.2);
+	EXEMPLO.heuristica_construtiva_1();
+
 	/*
 	Lendo arquivo
 	*/
@@ -58,7 +66,7 @@ int main() {
 
 	cout << "ARQUIVO LIDO COM SUCESSO" << endl;
 
-	INSTANCIA[0].heuristica_construtiva_1();
+	//INSTANCIA[0].heuristica_construtiva_1();
 
 	return 0;
 }
