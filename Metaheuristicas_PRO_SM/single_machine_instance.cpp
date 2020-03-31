@@ -14,6 +14,13 @@ single_machine_instance::single_machine_instance(int n, int d,
 	this->h = h;
 }
 
+
+void single_machine_instance::escrever_resultados(string metodo, int fo, float tempo) {
+	ofstream saida("resultados.csv", ofstream::app);
+	saida << metodo << "," << n << "," << k << "," << h << "," << fo << "," << tempo << endl;
+	saida.close();
+}
+
 single_machine_instance::single_machine_instance()
 {
 }
@@ -68,8 +75,8 @@ inline int single_machine_instance::avaliar_fo(vector<int> x){
 
 
 /*
-começo de uma heurística construtiva
-*/
+começo de uma heurística construtiva // ficou mto ruim
+
 vector<int> single_machine_instance::heuristica_construtiva_1()
 {
 	vector<int>
@@ -85,18 +92,18 @@ vector<int> single_machine_instance::heuristica_construtiva_1()
 		A, A_aux,
 		B, B_aux;
 
-	for (int i = 0; i < n; i++){
-		A.push_back(job(i, p[i], a[i], b[i]));
+	for (int i = 0; i < n; i++) {
+		B.push_back(job(i, p[i], a[i], b[i]));
 	}
 
-	A.sort(comp_job_atrasado());
+	B.sort(comp_job_atrasado());
 	fo_antiga = avaliar_fo(A, B);
 
 
-	list<job>::iterator it = A.begin();
-	while (it != A.end()) {
+	list<job>::iterator it = B.begin();
+	while (it != B.end()) {
 		int soma = 0;
-		for (auto bit : B)
+		for (auto bit : A)
 			soma += bit.p;
 
 		if (d - soma >= (*it).p) {
@@ -104,11 +111,11 @@ vector<int> single_machine_instance::heuristica_construtiva_1()
 			B_aux = B;
 
 			//inserir ordenado
-			B.insert(lower_bound(B.begin(), B.end(), *it, comp_job_adiantado()), *it);
+			A.insert(lower_bound(A.begin(), A.end(), *it, comp_job_adiantado()), *it);
 
 			list<job>::iterator it_aux = it;
 			it++;
-			A.erase(it_aux);
+			B.erase(it_aux);
 
 			fo = avaliar_fo(A, B);
 			if (fo > fo_antiga) {
@@ -117,48 +124,105 @@ vector<int> single_machine_instance::heuristica_construtiva_1()
 				break;
 			}
 			fo_antiga = fo;
-			for (auto bit : B)
+			for (auto bit : A)
 				soma += bit.p;
 		}
 		else {
 			break;
 		}
 
-		
+
 	}
 
-	cout << avaliar_fo(A, B) << endl;
 
 	//Passar solução dos conjuntos para o vetor x
 	int j = 0;
-	B.reverse();
-	for (auto it : B){
-		x[j] = it.id;
-		j++;
-	}
+	A.reverse();
 	for (auto it : A) {
 		x[j] = it.id;
 		j++;
 	}
-
-	cout << avaliar_fo(x) << endl;
+	for (auto it : B) {
+		x[j] = it.id;
+		j++;
+	}
+	escrever_resultados("construtiva", avaliar_fo(x), 0);
 	return x;
 }
+*/
+
+vector<int> single_machine_instance::heuristica_construtiva_2()
+{
+	vector<int>
+		x(n, 0); // declarar vetor x com zeros e dimensão n
+	int fo,
+		fo_antiga;
+
+	list<job>
+		A, A_aux,
+		B, B_aux,
+		JOBS;
+
+	for (int i = 0; i < n; i++) {
+		x[i] = i;
+		JOBS.push_back(job(i, p[i], a[i], b[i]));
+	}
+
+	int i = 0;
+	while (!JOBS.empty()){
+
+		int soma = 0;
+		for (auto a : A) {
+			soma += a.p;
+		}
+		A_aux = A;
+		B_aux = B;
+
+
+		list<job>::iterator j = max_element(JOBS.begin(), JOBS.end(), taxa());
+
+		B_aux.push_back(*j);
+		int fo1 = avaliar_fo(A_aux, B_aux);
+		B = B_aux;
+		B_aux.pop_back();
+		
+		A_aux.push_back(*j);
+		if (d - soma - (*j).p >= 0 && fo1 > avaliar_fo(A_aux, B_aux)) {		
+				B = B_aux;
+				A = A_aux;
+		}
+		else{
+			A_aux.pop_back();
+			A = A_aux;
+		}
+		JOBS.erase(j);
+			
+	}
+
+
+	escrever_resultados("construtiva", avaliar_fo(A, B), 0);
+}
+
+
 
 inline int single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
+
+	A.sort(comp_job_adiantado());
+	A.reverse();
+	B.sort(comp_job_atrasado());
 
 	int
 		C_time = d,
 		fo = 0;
 
-	for (auto i: A){
+	for (auto i: B){
 		C_time += i.p;
 		fo += i.b * max(0, C_time - d);
 	}
 
 	C_time = d;
 
-	for (auto i : B) {
+	for (auto i : A) {
 		fo += i.a * max(0, d - C_time);
 		C_time -= i.p;
 	}
@@ -201,3 +265,4 @@ void single_machine_instance::insert(vector<int> x, int a, int b, vector<int> &n
 	for (int c = b + 1; c < n; c++)
 		newsolution[c] = x[c];
 }
+

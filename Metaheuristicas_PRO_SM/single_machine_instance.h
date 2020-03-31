@@ -39,6 +39,18 @@ private:
 		}
 	};
 
+	struct comp_processamento {
+		bool operator ()(const job j1, const job j2) {
+			return (float)j1.p < (float)j2.p;
+		}
+	};
+
+	struct taxa {
+		bool operator ()(const job j1, const job j2) {
+			return (float) j1.b/ j1.a < (float)j2.b / j2.a;
+		}
+	};
+
 	int n,
 		d,
 		k;
@@ -67,6 +79,10 @@ public:
 
 	~single_machine_instance();
 
-	vector<int> heuristica_construtiva_1();	
+	vector<int> heuristica_construtiva_1();
+
+	vector<int> heuristica_construtiva_2();
+
+	void escrever_resultados(string metodo, int fo, float tempo);
 };
 
