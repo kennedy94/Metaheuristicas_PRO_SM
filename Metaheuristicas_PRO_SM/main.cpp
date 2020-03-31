@@ -54,7 +54,7 @@ int main() {
 
 				//definir a data de entrega
 				int sum_p = accumulate(p.begin(), p.end(), 0);
-				d = ceil((float)sum_p * h);
+				d = floor((float)sum_p * h);
 
 				//criar instância e adicionar no vetor;
 				INSTANCIA.push_back(single_machine_instance(n, d, p, a, b, k, h));
@@ -66,9 +66,11 @@ int main() {
 		cout << "ARQUIVO LIDO COM SUCESSO" << endl;
 
 		for (auto inst : INSTANCIA) {
-			inst.heuristica_construtiva_2();
+			inst.heuristica_construtiva_1();
 		}
-		break;
+		ofstream saida("resultados.csv", ofstream::app);
+		saida << endl << endl;
+		saida.close();
 	}
 
 	return 0;
