@@ -76,7 +76,7 @@ inline int single_machine_instance::avaliar_fo(vector<int> x){
 /*
 começo de uma heurística construtiva
 */
-vector<int> single_machine_instance::heuristica_construtiva_1()
+int single_machine_instance::heuristica_construtiva_1()
 {
 	vector<int>
 		x(n, 0); // declarar vetor x com zeros e dimensão n
@@ -124,9 +124,69 @@ vector<int> single_machine_instance::heuristica_construtiva_1()
 	}
 
 
-	escrever_resultados("construtiva", avaliar_fo(A, B), 0);
+	return avaliar_fo(A, B);
+}
 
-	return x;
+int single_machine_instance::heuristica_construtiva_2()
+{
+	vector<int>
+		x(n, 0); // declarar vetor x com zeros e dimensão n
+	int fo,
+		fo_best;
+
+	list<job>
+		A, A_aux, A_best,
+		B, B_aux, B_best,
+		JOBS;
+
+	for (int i = 0; i < n; i++) {
+		x[i] = i;
+		JOBS.push_back(job(i, p[i], a[i], b[i]));
+	}
+
+	int i = 0;
+	while (!JOBS.empty()) {
+
+		int soma = 0;
+		for (auto a : A) {
+			soma += a.p;
+		}
+
+		job j_best = *JOBS.begin();
+		fo_best = INT_MAX;
+		for (auto j : JOBS) {
+
+			A_aux = A;
+			B_aux = B;
+
+			B_aux.push_back(j);
+			int fo1 = avaliar_fo(A, B_aux);
+			if (fo1 <= fo_best) {
+				fo_best = fo1;
+				A_best = A;
+				B_best = B_aux;
+				j_best = j;
+			}
+			if (d - soma - (j).p >= 0) {
+				A_aux.push_back(j);
+				int fo2 = avaliar_fo(A_aux, B);
+
+				if (fo2 <= fo_best) {
+					fo_best = fo2;
+					B_best = B;
+					A_best = A_aux;
+					j_best = j;
+				}
+			}
+		}
+
+		JOBS.remove(j_best);
+		A = A_best;
+		B = B_best;
+	}
+
+
+	return avaliar_fo(A, B);
 }
 
 

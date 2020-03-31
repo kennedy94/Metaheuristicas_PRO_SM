@@ -20,12 +20,19 @@ private:
 			p,
 			a,
 			b;
-
+		job() {};
 		job(int id, int p, int a, int b) {
 			this->id = id;
 			this->p = p;
 			this->a = a;
 			this->b = b;
+		}
+		bool operator ==(const job& j) const {                           
+			return this->id == j.id; // return the result by reference
+		}
+
+		bool operator !=(const job& j) const {
+			return !operator==(j); // return the result by reference
 		}
 	};
 	struct comp_job_atrasado{
@@ -79,9 +86,9 @@ public:
 
 	~single_machine_instance();
 
-	vector<int> heuristica_construtiva_1();
+	int heuristica_construtiva_1();
 
-	vector<int> heuristica_construtiva_2();
+	int heuristica_construtiva_2();
 
 	void escrever_resultados(string metodo, int fo, float tempo);
 };

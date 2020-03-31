@@ -1,6 +1,7 @@
 
 
 #include "single_machine_instance.h"
+#include <chrono>
 
 using namespace std;
 
@@ -65,13 +66,26 @@ int main() {
 
 		cout << "ARQUIVO LIDO COM SUCESSO" << endl;
 
+		double time2;
+		
+		
+		
 		for (auto inst : INSTANCIA) {
-			inst.heuristica_construtiva_1();
+			auto comeco = chrono::high_resolution_clock::now();
+			int fo = inst.heuristica_construtiva_2();
+			auto fim = chrono::high_resolution_clock::now();
+
+			chrono::duration<double> elapsed = fim - comeco;
+			time2 = elapsed.count();
+			inst.escrever_resultados("construtiva", fo, time2);
 		}
+		auto fim = chrono::high_resolution_clock::now();
+
+		
+
 		ofstream saida("resultados.csv", ofstream::app);
 		saida << endl << endl;
 		saida.close();
-		break;
 	}
 
 	return 0;
