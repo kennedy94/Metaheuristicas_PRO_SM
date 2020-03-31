@@ -121,7 +121,6 @@ vector<int> single_machine_instance::heuristica_construtiva_1()
 			A = A_aux;
 		}
 		JOBS.erase(j);
-
 	}
 
 
@@ -129,78 +128,6 @@ vector<int> single_machine_instance::heuristica_construtiva_1()
 
 	return x;
 }
-
-/*
-vector<int> single_machine_instance::heuristica_construtiva_2()
-{
-	vector<int>
-		x(n, 0); // declarar vetor x com zeros e dimensão n
-	int fo,
-		fo_antiga;
-
-	list<job>
-		A, A_aux,
-		B, B_aux,
-		JOBS;
-
-	for (int i = 0; i < n; i++) {
-		x[i] = i;
-		B.push_back(job(i, p[i], a[i], b[i]));
-	}
-
-
-	while (true){
-
-		list<job>::iterator
-			it = B.begin(),
-			melhor;
-		int fo = avaliar_fo(A, B);
-		
-		
-		int soma = 0;
-		for (auto a : A)
-			soma += a.p;
-
-		bool melhorou = false;
-		while (it != B.end()) {
-			B_aux = B;
-			A_aux = A;
-			
-			if (d - soma - (*it).p >= 0) {
-
-				list<job>::iterator iit = B_aux.begin();
-				while (true) {
-					if ((*iit).id == (*it).id) {
-						B_aux.erase(iit);
-						break;
-					}
-					iit++;
-				}
-
-				A_aux.push_back(*it);
-				int fo2 = avaliar_fo(A_aux, B_aux);
-				if (fo >= fo2) {
-					melhor = it;
-					fo = fo2;
-					melhorou = true;
-				}
-			}
-			it++;
-		}
-
-		if (melhorou) {
-			A.push_back(*melhor);
-			B.erase(melhor);
-		}
-		else
-			break;
-	}
-
-
-	escrever_resultados("construtiva", avaliar_fo(A,B), 0);
-	return x;
-}
-*/
 
 
 inline int single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
@@ -210,7 +137,7 @@ inline int single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
 
 	int
 		C_time = d,
-		fo = 0;
+		fo = 0, soma = 0;
 
 	for (auto i: B){
 		C_time += i.p;
@@ -220,42 +147,47 @@ inline int single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
 	C_time = d;
 
 	for (auto i : A) {
+		soma += i.p;
 		fo += i.a * max(0, d - C_time);
 		C_time -= i.p;
 	}
 
+#ifdef DEBUG
 	if (C_time < 0) {
 		cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ERRO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
 		exit(0);
 	}
-
+#endif // DEBUG
+	
 	A.reverse();
 
 	int fo2;
-	bool tudo_certo = false;
 	int Start_time = 0;
 
-	do {
-		fo2 = 0;
-		C_time = Start_time;
 
-		for (auto i : A) {
-			C_time += i.p;
-			fo2 += i.a * (max(0, d - C_time));
-		}
+	fo2 = 0;
+	C_time = 0;
 
-		if (C_time + (*B.begin()).p > d) {
-			tudo_certo = true;
+	for (auto i : A) {
+		C_time += i.p;
+		fo2 += i.a * (max(0, d - C_time));
+	}
+	if (!B.empty()) {
+		if (C_time + (*B.begin()).p < d) {
+			fo2 = INT_MAX; // o atrasado não está mais atrasado
 		}
 		else {
-			Start_time++;
-		}
+			//continue calculando fo
+			for (auto i : B) {
+				C_time += i.p;
+				fo2 += i.b * (max(0, C_time - d));
+			}
 
-		for (auto i : B) {
-			C_time += i.p;
-			fo2 +=  i.b * (max(0, C_time - d));
 		}
-	} while (!tudo_certo);
+	}
+	else {
+		return fo;
+	}
 
 	return min(fo,fo2);
 }

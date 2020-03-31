@@ -71,6 +71,7 @@ int main() {
 		ofstream saida("resultados.csv", ofstream::app);
 		saida << endl << endl;
 		saida.close();
+		break;
 	}
 
 	return 0;
