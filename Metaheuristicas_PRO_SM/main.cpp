@@ -30,7 +30,7 @@ int main() {
 	b = { 14,7,8,9,7,9,5,14 };
 	single_machine_instance EXEMPLO(8, 14, p, a, b, 1, 14);
 
-	//EXEMPLO.heuristica_construtiva_1();
+	//EXEMPLO.heuristica_construtiva_2();
 
 	//return 0;
 	
@@ -91,7 +91,7 @@ int main() {
 		
 
 		ofstream saida("resultados.csv", ofstream::app);
-		saida << endl << endl;
+		//saida << endl << endl;
 		saida.close();
 	}
 

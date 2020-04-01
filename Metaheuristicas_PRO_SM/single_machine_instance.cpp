@@ -30,52 +30,7 @@ single_machine_instance::~single_machine_instance()
 {
 }
 
-
-/*
-procedimento para avaliar o valor de função objetivo de uma permutação x
-*/
-inline int single_machine_instance::avaliar_fo(vector<int> x){
-	if (x.size() != n) {
-		cerr << "ERRO, DIMENSAO DE X DIFERENTE DE N" << endl;
-		getchar();
-		exit(0);
-	}
-
-	int
-		C_time = d, // completion time acumulado
-		fo = 0,		// valor de função objetivo
-		fo_antiga = INT_MAX,	//valor de fo da ultima iteracao
-		delta,	// melhora do valor de fo
-		j = 0,	//iterador auxiliar para "mover uma posição para trás"
-		sum = 0;
-
-	do { 
-		fo = 0;
-
-		for (int i = 0; i < n; i++) {
-			C_time += p[x[i]];
-			fo += a[x[i]] * max(0, d - C_time) + b[x[i]] * max(0, C_time - d);
-		}
-		delta = fo - fo_antiga;
-
-		fo_antiga = fo;
-		sum += p[x[j]];
-		//sem straddling jobs
-		C_time = d - sum;
-		if (C_time < 0)
-			C_time = 0;
-
-		j++;
-	} while (j < n);
-	//O(n^2) no pior caso 
-
-	return fo;
-}
-
-
-/*
-começo de uma heurística construtiva
-*/
+/*Heuristica dispensada*/
 int single_machine_instance::heuristica_construtiva_1()
 {
 	vector<int>
@@ -136,6 +91,8 @@ int single_machine_instance::heuristica_construtiva_1()
 	return avaliar_fo(A, B);
 }
 
+
+/*Heuristica a ser considerada*/
 int single_machine_instance::heuristica_construtiva_2()
 {
 	vector<int>
@@ -162,33 +119,43 @@ int single_machine_instance::heuristica_construtiva_2()
 		}
 
 		job j_best = *JOBS.begin();
-		fo_best = INT_MAX;
-		for (auto j : JOBS) {
 
-			A_aux = A;
-			B_aux = B;
+		if (i == 0) {
+			j_best = *min_element(JOBS.begin(), JOBS.end(), comp_job_adiantado());
+			A_best.push_back(j_best);
 
-			B_aux.push_back(j);
-			int fo1 = avaliar_fo(A, B_aux);
-			if (fo1 <= fo_best) {
-				fo_best = fo1;
-				A_best = A;
-				B_best = B_aux;
-				j_best = j;
-			}
-			if (d - soma - (j).p >= 0) {
-				A_aux.push_back(j);
-				int fo2 = avaliar_fo(A_aux, B);
+		}
+		else {
+			fo_best = INT_MAX;
+			for (auto j : JOBS) {
 
-				if (fo2 <= fo_best) {
-					fo_best = fo2;
-					B_best = B;
-					A_best = A_aux;
+				A_aux = A;
+				B_aux = B;
+
+				B_aux.push_back(j);
+				int fo1 = avaliar_fo(A, B_aux);
+				if (fo1 <= fo_best) {
+					fo_best = fo1;
+					A_best = A;
+					B_best = B_aux;
 					j_best = j;
 				}
+				if (d - soma - (j).p >= 0) {
+					A_aux.push_back(j);
+					int fo2 = avaliar_fo(A_aux, B);
+
+					if (fo2 <= fo_best) {
+						fo_best = fo2;
+						B_best = B;
+						A_best = A_aux;
+						j_best = j;
+					}
+				}
+
+				
 			}
 		}
-
+		i++;
 		JOBS.remove(j_best);
 		A = A_best;
 		B = B_best;
@@ -231,7 +198,6 @@ inline int single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
 	A.reverse();
 
 	int fo2;
-	int Start_time = 0;
 
 
 	fo2 = 0;
@@ -262,6 +228,48 @@ inline int single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
 	return min(fo,fo2);
 }
 
+
+
+/*
+A partir daqui é preparação para metaheurística
+*/
+inline int single_machine_instance::avaliar_fo(vector<int> x) {
+	if (x.size() != n) {
+		cerr << "ERRO, DIMENSAO DE X DIFERENTE DE N" << endl;
+		getchar();
+		exit(0);
+	}
+
+	int
+		C_time = d, // completion time acumulado
+		fo = 0,		// valor de função objetivo
+		fo_antiga = INT_MAX,	//valor de fo da ultima iteracao
+		delta,	// melhora do valor de fo
+		j = 0,	//iterador auxiliar para "mover uma posição para trás"
+		sum = 0;
+
+	do {
+		fo = 0;
+
+		for (int i = 0; i < n; i++) {
+			C_time += p[x[i]];
+			fo += a[x[i]] * max(0, d - C_time) + b[x[i]] * max(0, C_time - d);
+		}
+		delta = fo - fo_antiga;
+
+		fo_antiga = fo;
+		sum += p[x[j]];
+		//sem straddling jobs
+		C_time = d - sum;
+		if (C_time < 0)
+			C_time = 0;
+
+		j++;
+	} while (j < n);
+	//O(n^2) no pior caso 
+
+	return fo;
+}
 
 void single_machine_instance::busca_local(vector<int> x, vector<int> &BEST) {
 	vector<int> newsolution(n);
@@ -297,4 +305,3 @@ void single_machine_instance::insert(vector<int> x, int a, int b, vector<int> &n
 	for (int c = b + 1; c < n; c++)
 		newsolution[c] = x[c];
 }
-
