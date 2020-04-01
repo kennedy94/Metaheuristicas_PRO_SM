@@ -120,6 +120,15 @@ int single_machine_instance::heuristica_construtiva_1()
 			A_aux.pop_back();
 			A = A_aux;
 		}
+		cout << "A: ";
+		for (auto a :A){
+			cout << a.id + 1<< " ";
+		}
+		cout << "; B: ";
+		for (auto b : B) {
+			cout << b.id + 1<< " ";
+		}
+		cout << "\t" << avaliar_fo(A, B) << " " << endl;
 		JOBS.erase(j);
 	}
 
@@ -228,12 +237,13 @@ inline int single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
 	fo2 = 0;
 	C_time = 0;
 
+
 	for (auto i : A) {
 		C_time += i.p;
 		fo2 += i.a * (max(0, d - C_time));
 	}
-	if (!B.empty()) {
-		if (C_time + (*B.begin()).p < d) {
+	if (!B.empty() || !A.empty()) {
+		if (C_time + (*B.begin()).p <= d) {
 			fo2 = INT_MAX; // o atrasado não está mais atrasado
 		}
 		else {

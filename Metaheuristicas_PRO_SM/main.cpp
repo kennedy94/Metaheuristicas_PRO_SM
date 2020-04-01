@@ -15,26 +15,33 @@ int main() {
 		"sch50.txt",  "sch100.txt",  "sch200.txt",
 		"sch500.txt",  "sch1000.txt" };
 
+	int
+		n, //variável auxiliar para numero de jobs
+		d, //variável auxiliar para data de entrega
+		n_problema; // Número de problemas no arquivo;
+	vector<int>
+		p, //vetor auxiliar de tempo de processamento
+		a, //vetor auxiliar de penalidade de antecedência
+		b; //vetor auxiliar de penalidade de atraso
 
-	/*
-	Lendo arquivo
-	*/
+
+	p = { 7,1,18,6,13,14,5,6 };
+	a = { 2,8,4,9,5,5,7,4 };
+	b = { 14,7,8,9,7,9,5,14 };
+	single_machine_instance EXEMPLO(8, 14, p, a, b, 1, 14);
+
+	//EXEMPLO.heuristica_construtiva_1();
+
+	//return 0;
+	
 	for (auto nome_arquivo : arquivos) {
-
-		int
-			n, //variável auxiliar para numero de jobs
-			d, //variável auxiliar para data de entrega
-			n_problema; // Número de problemas no arquivo;
-		vector<int>
-			p, //vetor auxiliar de tempo de processamento
-			a, //vetor auxiliar de penalidade de antecedência
-			b; //vetor auxiliar de penalidade de atraso
-
-		vector<single_machine_instance>
-			INSTANCIA; //Vetor com as instâncias que estão no arquivo
-
+		/*
+		Lendo arquivo
+		*/
 		ifstream
 			arquivo(nome_arquivo); //Variável para ler arquivo
+		vector<single_machine_instance>
+			INSTANCIA; //Vetor com as instâncias que estão no arquivo
 
 		arquivo >> n_problema;
 
