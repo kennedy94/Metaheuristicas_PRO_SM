@@ -222,7 +222,9 @@ inline int single_machine_instance::avaliar_fo(vector<int> x) {
 	return obj;
 }
 
-void single_machine_instance::busca_local( vector<int> &BEST) {
+
+
+void single_machine_instance::busca_local1(vector<int>& BEST) {
 	vector<int>
 		newsolution = BEST,
 		x = BEST;
@@ -230,7 +232,7 @@ void single_machine_instance::busca_local( vector<int> &BEST) {
 	int fo = avaliar_fo(x),
 		fo_n;
 
-	for (int it1 = 0; it1 < n; it1++)
+	for (int it1 = 0; it1 < n / 2; it1++) {
 		for (int it2 = 0; it2 < n; it2++) {
 			if (it1 != it2) {
 				insert(x, it1, it2, newsolution);
@@ -239,13 +241,64 @@ void single_machine_instance::busca_local( vector<int> &BEST) {
 				if (fo_n < fo) {
 					BEST = newsolution;
 					fo = fo_n;
-
-					//primeira melhora, tá bom
-					//return;
 				}
 			}
 		}
+	}
 }
+
+void single_machine_instance::busca_local2(vector<int>& BEST) {
+	vector<int>
+		newsolution = BEST,
+		x = BEST;
+
+	int fo = avaliar_fo(x),
+		fo_n;
+
+	for (int it1 = n / 2 + 1; it1 < n; it1++) {
+		for (int it2 = 0; it2 < n; it2++) {
+			if (it1 != it2) {
+				insert(x, it1, it2, newsolution);
+				fo_n = avaliar_fo(newsolution);
+
+				if (fo_n < fo) {
+					BEST = newsolution;
+					fo = fo_n;
+				}
+			}
+		}
+	}
+}
+
+
+void single_machine_instance::busca_local( vector<int> &BEST) {
+	vector<int>
+		BEST1 = BEST,
+		BEST2 = BEST;
+
+	thread
+		t1(&single_machine_instance::busca_local1, this, std::ref(BEST1)),
+		t2(&single_machine_instance::busca_local2, this, std::ref(BEST2));
+
+	t1.join();
+	t2.join();
+
+
+	int fo1 = avaliar_fo(BEST1),
+		fo2 = avaliar_fo(BEST2);
+
+	if (fo1 <= fo2) {
+		BEST = BEST1;
+	}
+	else {
+		BEST = BEST2;
+	}
+
+
+}
+
+
+
 
 void single_machine_instance::insert(vector<int> x, int a, int b, vector<int> &newsolution) {
 	newsolution[b] = x[a];

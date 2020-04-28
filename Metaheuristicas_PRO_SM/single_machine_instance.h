@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <numeric>
 #include <list>
+#include <thread> 
 
 
 using namespace std;
@@ -85,7 +86,9 @@ public:
 		avaliar_fo(vector<int> x);
 
 	void
-		busca_local(vector<int>& BEST);
+		busca_local(vector<int>& BEST),
+		busca_local1(vector<int>& BEST),
+		busca_local2(vector<int>& BEST);
 
 	single_machine_instance(int n, int d, vector<int> p, vector<int> a, vector<int> b, int k, double h);
 	
