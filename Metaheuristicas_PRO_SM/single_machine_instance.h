@@ -70,15 +70,22 @@ private:
 		a,
 		b;
 
-	inline int
-		avaliar_fo(vector<int> x),
+	
+
+	inline vector<int>
 		avaliar_fo(list<job> A, list<job> B);
+	
 
 	void 
-		busca_local(vector<int> x, vector<int>& best),
-		insert(vector<int> solution, int a, int b, vector<int>& newsolution);
+		insert(vector<int> x, int a, int b, vector<int>& newsolution);
 
 public:
+	
+	inline int
+		avaliar_fo(vector<int> x);
+
+	void
+		busca_local(vector<int>& BEST);
 
 	single_machine_instance(int n, int d, vector<int> p, vector<int> a, vector<int> b, int k, double h);
 	
@@ -86,9 +93,8 @@ public:
 
 	~single_machine_instance();
 
-	int heuristica_construtiva_1();
 
-	int heuristica_construtiva_2();
+	vector<int> heuristica_construtiva_2();
 
 	void escrever_resultados(string metodo, int fo, float tempo);
 };

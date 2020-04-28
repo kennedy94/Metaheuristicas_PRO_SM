@@ -11,7 +11,8 @@ int main() {
 	*/
 
 	vector<const char*>
-		arquivos = { "sch10.txt" ,"sch20.txt",
+		arquivos =
+		{ "sch10.txt" ,"sch20.txt",
 		"sch50.txt",  "sch100.txt",  "sch200.txt",
 		"sch500.txt",  "sch1000.txt" };
 
@@ -32,8 +33,9 @@ int main() {
 
 	//EXEMPLO.heuristica_construtiva_2();
 
-	//return 0;
 	
+
+
 	for (auto nome_arquivo : arquivos) {
 		/*
 		Lendo arquivo
@@ -79,21 +81,45 @@ int main() {
 		
 		for (auto inst : INSTANCIA) {
 			auto comeco = chrono::high_resolution_clock::now();
-			int fo = inst.heuristica_construtiva_2();
-			auto fim = chrono::high_resolution_clock::now();
 
-			chrono::duration<double> elapsed = fim - comeco;
+			vector<int> solucao_inicial = inst.heuristica_construtiva_2();
+
+			int 
+				fo = inst.avaliar_fo(solucao_inicial),
+				fo_antiga;
+
+
+			chrono::duration<double> elapsed;
+			double episilon = 1.0e-6;
+
+			do
+			{
+				fo_antiga = fo;
+
+				inst.busca_local(solucao_inicial);
+
+				fo = inst.avaliar_fo(solucao_inicial);
+
+				auto fim = chrono::high_resolution_clock::now();
+				elapsed = fim - comeco;
+
+			} while (fo < fo_antiga && elapsed.count() <= 600 &&  (double)(fo_antiga - fo)/ fo_antiga > episilon);
+			
+
 			time2 = elapsed.count();
-			inst.escrever_resultados("construtiva", fo, time2);
+			inst.escrever_resultados("busca local", fo, time2);
+			//break;
 		}
-		auto fim = chrono::high_resolution_clock::now();
-
+		//break;
 		
 
 		ofstream saida("resultados.csv", ofstream::app);
 		//saida << endl << endl;
 		saida.close();
 	}
+
+
+
 
 	return 0;
 }
