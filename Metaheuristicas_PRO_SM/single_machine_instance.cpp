@@ -224,6 +224,7 @@ inline int single_machine_instance::avaliar_fo(vector<int> x) {
 
 
 
+//it1 < it2
 void single_machine_instance::busca_local1(vector<int>& BEST) {
 	vector<int>
 		newsolution = BEST,
@@ -232,8 +233,8 @@ void single_machine_instance::busca_local1(vector<int>& BEST) {
 	int fo = avaliar_fo(x),
 		fo_n;
 
-	for (int it1 = 0; it1 < n / 2; it1++) {
-		for (int it2 = 0; it2 < n; it2++) {
+	for (int it1 = 0; it1 < n; it1++) {
+		for (int it2 = it1 + 1; it2 < n; it2++) {
 			if (it1 != it2) {
 				insert(x, it1, it2, newsolution);
 				fo_n = avaliar_fo(newsolution);
@@ -255,8 +256,8 @@ void single_machine_instance::busca_local2(vector<int>& BEST) {
 	int fo = avaliar_fo(x),
 		fo_n;
 
-	for (int it1 = n / 2 + 1; it1 < n; it1++) {
-		for (int it2 = 0; it2 < n; it2++) {
+	for (int it1 = 0; it1 < n; it1++) {
+		for (int it2 = max(it1-2, 0); it2 >= 0; it2--) {
 			if (it1 != it2) {
 				insert(x, it1, it2, newsolution);
 				fo_n = avaliar_fo(newsolution);
@@ -301,14 +302,23 @@ void single_machine_instance::busca_local( vector<int> &BEST) {
 
 
 void single_machine_instance::insert(vector<int> x, int a, int b, vector<int> &newsolution) {
-	newsolution[b] = x[a];
+	newsolution = x;
+	int c__;
+	if (a < b) {
+		newsolution[b] = x[a];
 
-	for (int c = a; c < b; c++)
-		newsolution[c] = x[c + 1];
+		for (int c = a; c < b; c++) {
+			c__ = c + 1;
+			newsolution[c] = x[c__];
+		}
+	}
+	else {
 
-	for (int c = 0; c < a; c++)
-		newsolution[c] = x[c];
+		newsolution[b] = x[a];
 
-	for (int c = b + 1; c < n; c++)
-		newsolution[c] = x[c];
+		for (int c = b + 1; c <= a; c++) {
+			c__ = c - 1;
+			newsolution[c] = x[c__];
+		}
+	}
 }

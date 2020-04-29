@@ -92,6 +92,7 @@ int main() {
 			chrono::duration<double> elapsed;
 			double episilon = 1.0e-6;
 
+			//busca local
 			do
 			{
 				fo_antiga = fo;
