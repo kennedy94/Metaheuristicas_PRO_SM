@@ -12,7 +12,6 @@ single_machine_instance::single_machine_instance(int n, int d,
 	this->b = b;
 	this->k = k;
 	this->h = h;
-
 }
 
 
@@ -32,7 +31,7 @@ single_machine_instance::~single_machine_instance()
 }
 
 /*Heuristica a ser considerada*/
-vector<int> single_machine_instance::heuristica_construtiva_2()
+single_machine_instance::solucao_const_busca single_machine_instance::heuristica_construtiva_2()
 {
 	vector<int>
 		x(n, 0); // declarar vetor x com zeros e dimensão n
@@ -61,6 +60,7 @@ vector<int> single_machine_instance::heuristica_construtiva_2()
 
 		if (i == 0) {
 			j_best = *min_element(JOBS.begin(), JOBS.end(), comp_job_adiantado());
+			//A_best.insert(std::lower_bound(A_best.begin(), A_best.end(), j_best, comp_job_adiantado()), j_best);
 			A_best.push_back(j_best);
 
 		}
@@ -71,7 +71,8 @@ vector<int> single_machine_instance::heuristica_construtiva_2()
 				A_aux = A;
 				B_aux = B;
 
-				B_aux.push_back(j);
+				B_aux.insert(std::lower_bound(B_aux.begin(), B_aux.end(), j, comp_job_atrasado()), j);
+				//B_aux.push_back(j);
 				int fo1 = avaliar_fo(A, B_aux)[0];
 				if (fo1 <= fo_best) {
 					fo_best = fo1;
@@ -80,7 +81,8 @@ vector<int> single_machine_instance::heuristica_construtiva_2()
 					j_best = j;
 				}
 				if (d - soma - (j).p >= 0) {
-					A_aux.push_back(j);
+					A_aux.insert(std::lower_bound(A_aux.begin(), A_aux.end(), j, comp_job_adiantado()), j);
+					//A_aux.push_back(j);
 					int fo2 = avaliar_fo(A_aux, B)[0];
 
 					if (fo2 <= fo_best) {
@@ -100,25 +102,34 @@ vector<int> single_machine_instance::heuristica_construtiva_2()
 		B = B_best;
 	}
 
-	vector<int> solucao_f(n + 1);
+	//vector<int> solucao_f(n + 1);
 
-	A.sort(comp_job_adiantado());
-	A.reverse();
-	B.sort(comp_job_atrasado());
+	//insert_A_pro_B(A, B);
 
-	i = 0;
+	//insert_B_pro_A(A, B);
 
-	for (auto a : A) {
-		solucao_f[i] = a.id;
-		i++;
-	}
+	////A.sort(comp_job_adiantado());
+	//A.reverse();
+	////B.sort(comp_job_atrasado());
 
-	for (auto b : B) {
-		solucao_f[i] = b.id;
-		i++;
-	}
+	//i = 0;
 
-	solucao_f[i] = avaliar_fo(A, B)[1];
+	//for (auto a : A) {
+	//	solucao_f[i] = a.id;
+	//	i++;
+	//}
+
+	//for (auto b : B) {
+	//	solucao_f[i] = b.id;
+	//	i++;
+	//}
+
+	//solucao_f[i] = avaliar_fo(A, B)[1];
+
+	solucao_const_busca solucao_f;
+	solucao_f.A = A;
+	solucao_f.B = B;
+	solucao_f.st = avaliar_fo(A, B)[1];
 
 
 	return solucao_f;
@@ -128,24 +139,27 @@ vector<int> single_machine_instance::heuristica_construtiva_2()
 inline vector<int> single_machine_instance::avaliar_fo(list<job> A, list<job> B) {
 	int tempo_init;
 
-	A.sort(comp_job_adiantado());
-	B.sort(comp_job_atrasado());
+	//A.sort(comp_job_adiantado());
+	//B.sort(comp_job_atrasado());
 
 	int
 		C_time = d,
 		fo = 0, soma = 0;
 
-	for (auto i: B){
-		C_time += i.p;
-		fo += i.b * max(0, C_time - d);
+	if (!B.empty()) {
+		for (auto i : B) {
+			C_time += i.p;
+			fo += i.b * max(0, C_time - d);
+		}
 	}
 
 	C_time = d;
-
-	for (auto i : A) {
-		soma += i.p;
-		fo += i.a * max(0, d - C_time);
-		C_time -= i.p;
+	if (!A.empty()) {
+		for (auto i : A) {
+			soma += i.p;
+			fo += i.a * max(0, d - C_time);
+			C_time -= i.p;
+		}
 	}
 
 	
@@ -157,10 +171,11 @@ inline vector<int> single_machine_instance::avaliar_fo(list<job> A, list<job> B)
 	fo2 = 0;
 	C_time = 0;
 
-
-	for (auto i : A) {
-		C_time += i.p;
-		fo2 += i.a * (max(0, d - C_time));
+	if (!A.empty()) {
+		for (auto i : A) {
+			C_time += i.p;
+			fo2 += i.a * (max(0, d - C_time));
+		}
 	}
 	if (!B.empty() || !A.empty()) {
 		if (!B.empty()) {
@@ -178,7 +193,7 @@ inline vector<int> single_machine_instance::avaliar_fo(list<job> A, list<job> B)
 		}
 	}
 	else {
-		return vector<int> {fo, d- soma};
+		return vector<int> {fo, d - soma};
 	}
 
 	if (fo < fo2) {
@@ -225,83 +240,80 @@ inline int single_machine_instance::avaliar_fo(vector<int> x) {
 
 
 //it1 < it2
-void single_machine_instance::busca_local1(vector<int>& BEST) {
-	vector<int>
-		newsolution = BEST,
-		x = BEST;
-
-	int fo = avaliar_fo(x),
-		fo_n;
-
-	for (int it1 = 0; it1 < n; it1++) {
-		for (int it2 = it1 + 1; it2 < n; it2++) {
-			if (it1 != it2) {
-				insert(x, it1, it2, newsolution);
-				fo_n = avaliar_fo(newsolution);
-
-				if (fo_n < fo) {
-					BEST = newsolution;
-					fo = fo_n;
-				}
-			}
-		}
-	}
-}
-
-void single_machine_instance::busca_local2(vector<int>& BEST) {
-	vector<int>
-		newsolution = BEST,
-		x = BEST;
-
-	int fo = avaliar_fo(x),
-		fo_n;
-
-	for (int it1 = 0; it1 < n; it1++) {
-		for (int it2 = max(it1-2, 0); it2 >= 0; it2--) {
-			if (it1 != it2) {
-				insert(x, it1, it2, newsolution);
-				fo_n = avaliar_fo(newsolution);
-
-				if (fo_n < fo) {
-					BEST = newsolution;
-					fo = fo_n;
-				}
-			}
-		}
-	}
-}
-
-
-void single_machine_instance::busca_local( vector<int> &BEST) {
-	vector<int>
-		BEST1 = BEST,
-		BEST2 = BEST;
-
-	thread
-		t1(&single_machine_instance::busca_local1, this, std::ref(BEST1)),
-		t2(&single_machine_instance::busca_local2, this, std::ref(BEST2));
-
-	t1.join();
-	t2.join();
-
-
-	int fo1 = avaliar_fo(BEST1),
-		fo2 = avaliar_fo(BEST2);
-
-	if (fo1 <= fo2) {
-		BEST = BEST1;
-	}
-	else {
-		BEST = BEST2;
-	}
-
-
-}
-
+//void single_machine_instance::busca_local1(vector<int>& BEST) {
+//	vector<int>
+//		newsolution = BEST,
+//		x = BEST;
+//
+//	int fo = avaliar_fo(x),
+//		fo_n;
+//
+//	for (int it1 = 0; it1 < n; it1++) {
+//		for (int it2 = it1 + 1; it2 < n; it2++) {
+//			if (it1 != it2) {
+//				insert(x, it1, it2, newsolution);
+//				fo_n = avaliar_fo(newsolution);
+//
+//				if (fo_n < fo) {
+//					BEST = newsolution;
+//					fo = fo_n;
+//				}
+//			}
+//		}
+//	}
+//}
+//
+//void single_machine_instance::busca_local2(vector<int>& BEST) {
+//	vector<int>
+//		newsolution = BEST,
+//		x = BEST;
+//
+//	int fo = avaliar_fo(x),
+//		fo_n;
+//
+//	for (int it1 = 0; it1 < n; it1++) {
+//		for (int it2 = it1 + 1; it2 < n; it2++) {
+//			if (it1 != it2) {
+//				insert(x, it2, it1, newsolution);
+//				fo_n = avaliar_fo(newsolution);
+//
+//				if (fo_n < fo) {
+//					BEST = newsolution;
+//					fo = fo_n;
+//				}
+//			}
+//		}
+//	}
+//}
+//
+//void single_machine_instance::busca_local( vector<int> &BEST) {
+//	vector<int>
+//		BEST1 = BEST,
+//		BEST2 = BEST;
+//
+//	thread
+//		t1(&single_machine_instance::busca_local1, this, std::ref(BEST1)),
+//		t2(&single_machine_instance::busca_local2, this, std::ref(BEST2));
+//
+//	t1.join();
+//	t2.join();
+//
+//
+//	int fo1 = avaliar_fo(BEST1),
+//		fo2 = avaliar_fo(BEST2);
+//
+//	if (fo1 <= fo2) {
+//		BEST = BEST1;
+//	}
+//	else {
+//		BEST = BEST2;
+//	}
+//
+//
+//}
 
 
-
-void single_machine_instance::insert(vector<int> x, int a, int b, vector<int> &newsolution) {
+void single_machine_instance::insert(vector<int> x, int a, int b, vector<int>& newsolution) {
 	newsolution = x;
 	int c__;
 	if (a < b) {
@@ -321,4 +333,306 @@ void single_machine_instance::insert(vector<int> x, int a, int b, vector<int> &n
 			newsolution[c] = x[c__];
 		}
 	}
+}
+
+
+void single_machine_instance::insert_A_pro_B(list<job>& A_best, list<job>& B_best) {
+	list<job>
+		A_aux = A_best,	//Guardam solução de entrada
+		B_aux = B_best,
+		A = A_best,		//São usados para os movimentos
+		B = B_best;
+
+	int i = 0;
+
+	int
+		fo_melhor = avaliar_fo(A, B)[0],
+		fo_atual;
+
+	job tarefa_sai_de_B;
+
+	while (i < A_aux.size()) {
+		A = A_aux;
+		B = B_aux;
+
+		auto it = next(A.begin(), i);
+		//inserir mantendo V-shape
+		B.insert(std::lower_bound(B.begin(), B.end(), *it, comp_job_atrasado()), *it);
+
+		A.erase(it);
+		
+		//para cada "job" em B
+
+		list<job> B2 = B;
+
+		for (int j = 0; j < B2.size(); j++) {
+			B = B2;
+			auto it_B = next(B.begin(), j);
+			tarefa_sai_de_B = *it_B;
+
+			int sum = 0;
+			if (!A.empty()) {
+				for (auto a : A) {
+					sum += a.p;
+				}
+
+				if (d - sum >= tarefa_sai_de_B.p) {
+					B.erase(it_B);
+					A.insert(std::lower_bound(A.begin(), A.end(), tarefa_sai_de_B, comp_job_adiantado()), tarefa_sai_de_B);
+				}
+			}
+
+			fo_atual = avaliar_fo(A, B)[0];
+			if (fo_melhor >= fo_atual) {
+				A_best = A;
+				B_best = B;
+			}
+		}
+		i++;
+
+	}
+}
+
+void single_machine_instance::insert_B_pro_A(list<job>& A_best, list<job>& B_best) {
+	list<job>
+		A_aux = A_best,
+		B_aux = B_best,
+		A = A_best,
+		B = B_best;
+
+	int i = 0;
+
+	int
+		fo_melhor = avaliar_fo(A, B)[0],
+		fo_atual;
+
+	job tarefa_sai_de_A;
+	
+
+	for (int i = 0; i < B_aux.size(); i++) {
+		
+		A = A_aux;
+		B = B_aux;
+
+		auto it = next(B.begin(), i);
+		//inserir mantendo V-shape
+		int sum = 0;
+		if (!A.empty()) {
+			for (auto a : A) {
+				sum += a.p;
+			}
+
+			if (d - sum >= (*it).p) {
+				A.insert(std::lower_bound(A.begin(), A.end(), *it, comp_job_adiantado()), *it);
+				B.erase(it);
+			}
+		}
+		
+		list<job> A2 = A;
+		for (int j = 0; j < A2.size(); j++)
+		{
+			A = A2;
+			auto it_A = next(A.begin(), j);
+			tarefa_sai_de_A = *it_A;
+			A.erase(it_A);
+			B.insert(std::lower_bound(B.begin(), B.end(), tarefa_sai_de_A, comp_job_atrasado()), tarefa_sai_de_A);
+
+
+			fo_atual = avaliar_fo(A, B)[0];
+			if (fo_melhor >= fo_atual) {
+				A_best = A;
+				B_best = B;
+			}
+		}
+
+	}
+	//cout << endl;
+}
+
+void single_machine_instance::insert_B_pro_A_2(list<job>& A_best, list<job>& B_best)
+{
+
+	list<job>
+		A_aux = A_best,
+		B_aux = B_best,
+		A = A_best,
+		B = B_best;
+
+	int i = 0;
+
+	int
+		fo_melhor = avaliar_fo(A, B)[0],
+		fo_atual;
+
+	job tarefa_sai_de_A;
+
+
+
+
+	for (int i = 0; i < B_aux.size(); i++) {
+
+		A = A_aux;
+		B = B_aux;
+
+		auto it = next(B.begin(), i);
+		//inserir mantendo V-shape
+		int sum = 0;
+		int id_job = (*it).id;
+		if (!A.empty()) {
+			for (auto a : A) {
+				sum += a.p;
+			}
+
+			if (d - sum >= (*it).p) {
+				A.insert(std::lower_bound(A.begin(), A.end(), *it, comp_job_adiantado()), *it);
+				B.erase(it);
+			}
+		}
+
+		fo_atual = avaliar_fo(A, B)[0];
+		if (fo_melhor >= fo_atual) {
+			A_best = A;
+			B_best = B;
+		}
+		
+
+		auto it_A = A.begin();
+		while(!A.empty() && it_A != A.end())
+		{
+			if ((*it_A).id != id_job) {
+				auto it_aux = next(it_A, 1);
+				tarefa_sai_de_A = *it_A;
+				A.erase(it_A);
+				B.insert(std::lower_bound(B.begin(), B.end(), tarefa_sai_de_A, comp_job_atrasado()), tarefa_sai_de_A);
+				it_A = it_aux;
+
+				fo_atual = avaliar_fo(A, B)[0];
+				if (fo_melhor >= fo_atual) {
+					A_best = A;
+					B_best = B;
+				}
+			}
+			else
+			{
+				it_A++;
+			}
+		}
+
+	}
+}
+
+void single_machine_instance::insert_A_pro_B_2(list<job>& A_best, list<job>& B_best){
+	list<job>
+		A_aux = A_best,	//Guardam solução de entrada
+		B_aux = B_best,
+		A = A_best,		//São usados para os movimentos
+		B = B_best;
+
+	int i = 0;
+
+	int
+		fo_melhor = avaliar_fo(A, B)[0],
+		fo_atual;
+
+	job tarefa_sai_de_B;
+
+	while (i < A_aux.size()) {
+		A = A_aux;
+		B = B_aux;
+
+		auto it = next(A.begin(), i);
+		//inserir mantendo V-shape
+		B.insert(std::lower_bound(B.begin(), B.end(), *it, comp_job_atrasado()), *it);
+		int it_id = (*it).id;
+		A.erase(it);
+
+
+		fo_atual = avaliar_fo(A, B)[0];
+		if (fo_melhor >= fo_atual) {
+			A_best = A;
+			B_best = B;
+		}
+
+		//para cada "job" em B
+
+		while (B.size() > 1) {
+			auto it_B = B.begin();
+			if ((*it_B).id == it_id) {
+				it_B++;
+			}
+
+			
+			tarefa_sai_de_B = *it_B;
+
+			int sum = 0;
+			if (!A.empty()) {
+				for (auto a : A) {
+					sum += a.p;
+				}
+
+				if (d - sum >= tarefa_sai_de_B.p) {
+					B.erase(it_B);
+					A.insert(std::lower_bound(A.begin(), A.end(), tarefa_sai_de_B, comp_job_adiantado()), tarefa_sai_de_B);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			fo_atual = avaliar_fo(A, B)[0];
+			if (fo_melhor >= fo_atual) {
+				A_best = A;
+				B_best = B;
+			}
+		}
+		i++;
+
+	}
+}
+
+
+void single_machine_instance::busca_local_com_conjunto(list<job>& A, list<job>& B) {
+
+	solucao_const_busca
+		BEST,
+		BEST1,
+		BEST2;
+
+	BEST.A = A;
+	BEST.B = B;
+	BEST.st = avaliar_fo(A, B)[1];
+	int fo = avaliar_fo(A, B)[0];
+
+	BEST1 = BEST;
+	BEST2 = BEST;
+
+	thread
+		t1(&single_machine_instance::insert_A_pro_B_2, this, std::ref(BEST1.A), std::ref(BEST1.B)),
+		t2(&single_machine_instance::insert_B_pro_A_2, this, std::ref(BEST2.A), std::ref(BEST2.B));
+
+	t1.join();
+	t2.join();
+
+	thread
+		t3(&single_machine_instance::insert_A_pro_B_2, this, std::ref(BEST2.A), std::ref(BEST2.B)),
+		t4(&single_machine_instance::insert_B_pro_A_2, this, std::ref(BEST1.A), std::ref(BEST1.B));
+
+	t3.join();
+	t4.join();
+
+
+
+	int fo1 = avaliar_fo(BEST1.A, BEST1.B)[0],
+		fo2 = avaliar_fo(BEST2.A, BEST2.B)[0];
+
+	if (fo1 <= fo2) {
+		BEST = BEST1;
+	}
+	else {
+		BEST = BEST2;
+	}
+
+	A = BEST.A;
+	B = BEST.B;
 }

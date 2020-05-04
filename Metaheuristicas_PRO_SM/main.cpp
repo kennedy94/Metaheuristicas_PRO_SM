@@ -12,9 +12,10 @@ int main() {
 
 	vector<const char*>
 		arquivos =
-		{ "sch10.txt" ,"sch20.txt",
-		"sch50.txt",  "sch100.txt",  "sch200.txt",
-		"sch500.txt",  "sch1000.txt" };
+		{ //"sch10.txt" ,"sch20.txt",
+		//"sch50.txt",  "sch100.txt",  "sch200.txt",
+		//"sch500.txt",
+		"sch1000.txt" };
 
 	int
 		n, //variável auxiliar para numero de jobs
@@ -82,30 +83,30 @@ int main() {
 		for (auto inst : INSTANCIA) {
 			auto comeco = chrono::high_resolution_clock::now();
 
-			vector<int> solucao_inicial = inst.heuristica_construtiva_2();
+			single_machine_instance::solucao_const_busca solucao_inicial = inst.heuristica_construtiva_2();
 
-			int 
-				fo = inst.avaliar_fo(solucao_inicial),
+			int
+				fo = inst.avaliar_fo(solucao_inicial.A, solucao_inicial.B)[0],
 				fo_antiga;
 
 
 			chrono::duration<double> elapsed;
-			double episilon = 1.0e-6;
+			double episilon = 1.0e-5;
 
 			//busca local
+			int n_iter = 0;
 			do
 			{
 				fo_antiga = fo;
 
-				inst.busca_local(solucao_inicial);
+				inst.busca_local_com_conjunto(solucao_inicial.A, solucao_inicial.B);
 
-				fo = inst.avaliar_fo(solucao_inicial);
+				fo = inst.avaliar_fo(solucao_inicial.A, solucao_inicial.B)[0];
 
 				auto fim = chrono::high_resolution_clock::now();
 				elapsed = fim - comeco;
-
-			} while (fo < fo_antiga && elapsed.count() <= 600 &&  (double)(fo_antiga - fo)/ fo_antiga > episilon);
-			
+			} while ( elapsed.count() <= 400 &&  (double)(fo_antiga - fo)/ fo_antiga > episilon);
+			//cout << "n_inter = " << n_iter << endl;
 
 			time2 = elapsed.count();
 			inst.escrever_resultados("busca local", fo, time2);
@@ -113,10 +114,6 @@ int main() {
 		}
 		//break;
 		
-
-		ofstream saida("resultados.csv", ofstream::app);
-		//saida << endl << endl;
-		saida.close();
 	}
 
 

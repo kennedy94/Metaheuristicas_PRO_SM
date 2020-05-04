@@ -36,6 +36,8 @@ private:
 			return !operator==(j); // return the result by reference
 		}
 	};
+
+
 	struct comp_job_atrasado{
 		bool operator ()(const job j1, const job j2) {
 			return (float)j1.p / j1.b < (float)j2.p / j2.b;
@@ -59,6 +61,8 @@ private:
 		}
 	};
 
+	
+
 	int n,
 		d,
 		k;
@@ -73,22 +77,33 @@ private:
 
 	
 
-	inline vector<int>
-		avaliar_fo(list<job> A, list<job> B);
+	
 	
 
 	void 
 		insert(vector<int> x, int a, int b, vector<int>& newsolution);
 
 public:
+	struct solucao_const_busca {
+		list<job> A, B;
+		int st;
+	};
 	
 	inline int
 		avaliar_fo(vector<int> x);
+	inline vector<int>
+		avaliar_fo(list<job> A, list<job> B);
 
 	void
-		busca_local(vector<int>& BEST),
-		busca_local1(vector<int>& BEST),
-		busca_local2(vector<int>& BEST);
+		//busca_local(vector<int>& BEST),
+		//busca_local1(vector<int>& BEST),
+		//busca_local2(vector<int>& BEST),
+		insert_A_pro_B(list<job>& A_best, list<job>& B_best),	//faz movimento de A pro B
+		insert_B_pro_A(list<job>& A_best, list<job>& B_best),	//faz movimento de B pro A
+		insert_A_pro_B_2(list<job>& A_best, list<job>& B_best),	//faz movimento de A pro B
+		insert_B_pro_A_2(list<job>& A_best, list<job>& B_best),	//faz movimento de B pro A
+		//insert_A_pro_B(list<job>& A_best, list<job>& B_best),	//
+		busca_local_com_conjunto(list<job>& A, list<job>& B);	//busca local geral paralelizada usando conjuntos A e B e V-shape
 
 	single_machine_instance(int n, int d, vector<int> p, vector<int> a, vector<int> b, int k, double h);
 	
@@ -96,8 +111,8 @@ public:
 
 	~single_machine_instance();
 
+	solucao_const_busca heuristica_construtiva_2();
 
-	vector<int> heuristica_construtiva_2();
 
 	void escrever_resultados(string metodo, int fo, float tempo);
 };
