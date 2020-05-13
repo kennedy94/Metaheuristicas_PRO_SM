@@ -12,9 +12,9 @@ int main() {
 
 	vector<const char*>
 		arquivos =
-		{ //"sch10.txt" ,"sch20.txt",
-		//"sch50.txt",  "sch100.txt",  "sch200.txt",
-		//"sch500.txt",
+		{ "sch10.txt" ,"sch20.txt",
+		"sch50.txt",  "sch100.txt",  "sch200.txt",
+		"sch500.txt",
 		"sch1000.txt" };
 
 	int
@@ -110,9 +110,9 @@ int main() {
 
 			time2 = elapsed.count();
 			inst.escrever_resultados("busca local", fo, time2);
-			//break;
+			break;
 		}
-		//break;
+		break;
 		
 	}
 

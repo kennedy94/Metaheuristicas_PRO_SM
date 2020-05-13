@@ -102,30 +102,6 @@ single_machine_instance::solucao_const_busca single_machine_instance::heuristica
 		B = B_best;
 	}
 
-	//vector<int> solucao_f(n + 1);
-
-	//insert_A_pro_B(A, B);
-
-	//insert_B_pro_A(A, B);
-
-	////A.sort(comp_job_adiantado());
-	//A.reverse();
-	////B.sort(comp_job_atrasado());
-
-	//i = 0;
-
-	//for (auto a : A) {
-	//	solucao_f[i] = a.id;
-	//	i++;
-	//}
-
-	//for (auto b : B) {
-	//	solucao_f[i] = b.id;
-	//	i++;
-	//}
-
-	//solucao_f[i] = avaliar_fo(A, B)[1];
-
 	solucao_const_busca solucao_f;
 	solucao_f.A = A;
 	solucao_f.B = B;
@@ -334,6 +310,8 @@ void single_machine_instance::insert(vector<int> x, int a, int b, vector<int>& n
 		}
 	}
 }
+
+
 
 
 void single_machine_instance::insert_A_pro_B(list<job>& A_best, list<job>& B_best) {
@@ -635,4 +613,58 @@ void single_machine_instance::busca_local_com_conjunto(list<job>& A, list<job>& 
 
 	A = BEST.A;
 	B = BEST.B;
+}
+
+
+/*PSO*/
+/*transforma o 'chromossomo' numa sequencia viável*/
+vector<int> single_machine_instance::x_para_sequencia_SPV(vector<float> x)
+{
+	//vector<float> x_aux = x;
+	//x_aux.pop_back();
+	vector<int> indices(n);
+
+	iota(indices.begin(), indices.end(), 0);
+
+	stable_sort(indices.begin(), indices.end(),
+		[&x](int i, int j) {return x[i] < x[j];});
+
+	indices.push_back(max(0, (int)round(x.back())));
+
+	return indices;
+}
+
+vector<float> single_machine_instance::sequencia_para_x(vector<int> sequencia){
+
+	vector<float> x(sequencia.size());
+
+	for (int i = 0; i < n+1; i++){
+		x[sequencia[i]] = (float)i;
+	}
+	x[n] = (float)sequencia[n];
+
+	return x;
+}
+
+vector<int> single_machine_instance::conjuntos_para_sequencia(solucao_const_busca solu)
+{
+	vector<int> sequencia(n + 1);
+
+	int i = 0;
+	solu.A.reverse();
+
+
+	for (auto a : solu.A) {
+		sequencia[i] = a.id;
+		i++;
+	}
+
+	for (auto b : solu.B) {
+		sequencia[i] = b.id;
+		i++;
+	}
+
+	sequencia[i] = solu.st;
+
+	return sequencia;
 }
