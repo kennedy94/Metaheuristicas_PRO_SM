@@ -6,6 +6,7 @@
 #include <numeric>
 #include <list>
 #include <thread> 
+#include <random>
 
 
 using namespace std;
@@ -73,26 +74,33 @@ private:
 		p,
 		a,
 		b;
-
-	void 
-		insert(vector<int> x, int a, int b, vector<int>& newsolution);
-
-	vector<int>
-		x_para_sequencia_SPV(vector<float> x),
-		conjuntos_para_sequencia(solucao_const_busca solu);
-
-	vector<float>
-		sequencia_para_x(vector<int> sequencia);
+	vector<vector<float>>
+		gerar_populacao(int m),
+		restart_populacao(int m);
 
 
 public:
 	struct solucao_const_busca {
-		list<job> A, B;
-		int st;
+		list<job>
+			A,
+			B;
+		int
+			st,
+			fo;
+
+		solucao_const_busca() {
+			A = list<job>();
+			B = list<job>();
+			st = int();
+			fo = int();
+		};
 	};
 
-	vector<int>
-		conjuntos_para_sequencia(solucao_const_busca solu);
+	vector<float>
+		solucao_para_x(solucao_const_busca solu);
+
+	single_machine_instance::single_machine_instance::solucao_const_busca
+		x_para_solucao(vector<float> x);
 	
 	inline int
 		avaliar_fo(vector<int> x);
@@ -100,22 +108,13 @@ public:
 		avaliar_fo(list<job> A, list<job> B);
 
 	void
-		//busca_local(vector<int>& BEST),
-		//busca_local1(vector<int>& BEST),
-		//busca_local2(vector<int>& BEST),
-		insert_A_pro_B(list<job>& A_best, list<job>& B_best),	//faz movimento de A pro B
-		insert_B_pro_A(list<job>& A_best, list<job>& B_best),	//faz movimento de B pro A
 		insert_A_pro_B_2(list<job>& A_best, list<job>& B_best),	//faz movimento de A pro B
 		insert_B_pro_A_2(list<job>& A_best, list<job>& B_best),	//faz movimento de B pro A
-		//insert_A_pro_B(list<job>& A_best, list<job>& B_best),	//
-		busca_local_com_conjunto(list<job>& A, list<job>& B),	//busca local geral paralelizada usando conjuntos A e B e V-shape
-		funcao_testte_PSO(); //para testar as funções auxiliares;
+		busca_local_com_conjunto(list<job>& A, list<job>& B);	//busca local geral paralelizada usando conjuntos A e B e V-shape
+	
+	solucao_const_busca PSO(); //para testar as funções auxiliares;
 
 	single_machine_instance(int n, int d, vector<int> p, vector<int> a, vector<int> b, int k, double h);
-	
-	single_machine_instance();
-
-	~single_machine_instance();
 
 	solucao_const_busca heuristica_construtiva_2();
 

@@ -81,9 +81,9 @@ int main() {
 		
 		
 		for (auto inst : INSTANCIA) {
-			auto comeco = chrono::high_resolution_clock::now();
+			auto comeco_tudo = chrono::high_resolution_clock::now();
 
-			single_machine_instance::solucao_const_busca solucao_inicial = inst.heuristica_construtiva_2();
+			single_machine_instance::solucao_const_busca solucao_inicial = inst.PSO();
 
 			int
 				fo = inst.avaliar_fo(solucao_inicial.A, solucao_inicial.B)[0],
@@ -94,6 +94,7 @@ int main() {
 			double episilon = 1.0e-5;
 
 			//busca local
+			auto comeco = chrono::high_resolution_clock::now();
 			int n_iter = 0;
 			do
 			{
@@ -108,12 +109,15 @@ int main() {
 			} while ( elapsed.count() <= 400 &&  (double)(fo_antiga - fo)/ fo_antiga > episilon);
 			//cout << "n_inter = " << n_iter << endl;
 
+
+			elapsed = chrono::high_resolution_clock::now() - comeco_tudo;
+
 			time2 = elapsed.count();
 			inst.escrever_resultados("busca local", fo, time2);
-			break;
-		}
+
+			//break;
+		}	
 		break;
-		
 	}
 
 
