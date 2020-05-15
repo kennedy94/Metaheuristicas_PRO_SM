@@ -12,10 +12,12 @@ int main() {
 
 	vector<const char*>
 		arquivos =
-		{ "sch10.txt" ,"sch20.txt",
+		{
+		"sch10.txt" ,"sch20.txt",
 		"sch50.txt",  "sch100.txt",  "sch200.txt",
 		"sch500.txt",
-		"sch1000.txt" };
+		"sch1000.txt"
+		};
 
 	int
 		n, //variável auxiliar para numero de jobs
@@ -82,42 +84,39 @@ int main() {
 		
 		for (auto inst : INSTANCIA) {
 			auto comeco_tudo = chrono::high_resolution_clock::now();
-
+			cout << nome_arquivo << endl;
 			single_machine_instance::solucao_const_busca solucao_inicial = inst.PSO();
-
+			cout << "\t PSO" << endl;
 			int
-				fo = inst.avaliar_fo(solucao_inicial.A, solucao_inicial.B)[0],
 				fo_antiga;
 
 
 			chrono::duration<double> elapsed;
-			double episilon = 1.0e-5;
+			float episilon = 1.0e-5;
 
 			//busca local
 			auto comeco = chrono::high_resolution_clock::now();
 			int n_iter = 0;
 			do
 			{
-				fo_antiga = fo;
+				fo_antiga = solucao_inicial.fo;
 
-				inst.busca_local_com_conjunto(solucao_inicial.A, solucao_inicial.B);
-
-				fo = inst.avaliar_fo(solucao_inicial.A, solucao_inicial.B)[0];
+				inst.busca_local_com_conjunto(solucao_inicial);
 
 				auto fim = chrono::high_resolution_clock::now();
 				elapsed = fim - comeco;
-			} while ( elapsed.count() <= 400 &&  (double)(fo_antiga - fo)/ fo_antiga > episilon);
+			} while ( elapsed.count() <= 200 &&  (float)(fo_antiga - solucao_inicial.fo)/ fo_antiga > episilon);
 			//cout << "n_inter = " << n_iter << endl;
-
+			cout << "\t Busca local" << endl << endl;
 
 			elapsed = chrono::high_resolution_clock::now() - comeco_tudo;
 
 			time2 = elapsed.count();
-			inst.escrever_resultados("busca local", fo, time2);
+			inst.escrever_resultados("busca local", solucao_inicial.fo, time2);
 
 			//break;
 		}	
-		break;
+		//break;
 	}
 
 

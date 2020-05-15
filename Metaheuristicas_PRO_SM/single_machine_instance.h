@@ -110,7 +110,7 @@ public:
 	void
 		insert_A_pro_B_2(list<job>& A_best, list<job>& B_best),	//faz movimento de A pro B
 		insert_B_pro_A_2(list<job>& A_best, list<job>& B_best),	//faz movimento de B pro A
-		busca_local_com_conjunto(list<job>& A, list<job>& B);	//busca local geral paralelizada usando conjuntos A e B e V-shape
+		busca_local_com_conjunto(solucao_const_busca& BEST);	//busca local geral paralelizada usando conjuntos A e B e V-shape
 	
 	solucao_const_busca PSO(); //para testar as funções auxiliares;
 

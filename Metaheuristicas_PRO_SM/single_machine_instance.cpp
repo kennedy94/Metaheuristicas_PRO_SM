@@ -96,7 +96,9 @@ single_machine_instance::solucao_const_busca single_machine_instance::heuristica
 	solucao_const_busca solucao_f;
 	solucao_f.A = A;
 	solucao_f.B = B;
-	solucao_f.st = avaliar_fo(A, B)[1];
+	vector<int> fo_st = avaliar_fo(A, B);
+	solucao_f.fo = fo_st[0];
+	solucao_f.st = fo_st[1];
 
 
 	return solucao_f;
@@ -350,17 +352,13 @@ void single_machine_instance::insert_A_pro_B_2(list<job>& A_best, list<job>& B_b
 }
 
 
-void single_machine_instance::busca_local_com_conjunto(list<job>& A, list<job>& B) {
+void single_machine_instance::busca_local_com_conjunto(solucao_const_busca &BEST) {
 
 	solucao_const_busca
-		BEST,
 		BEST1,
 		BEST2;
 
-	BEST.A = A;
-	BEST.B = B;
-	BEST.st = avaliar_fo(A, B)[1];
-	int fo = avaliar_fo(A, B)[0];
+	vector<int> fo_st;
 
 	BEST1 = BEST;
 	BEST2 = BEST;
@@ -380,19 +378,23 @@ void single_machine_instance::busca_local_com_conjunto(list<job>& A, list<job>& 
 	t4.join();
 
 
+	fo_st = avaliar_fo(BEST1.A, BEST1.B);
+	BEST1.fo = fo_st[0];
+	BEST1.st = fo_st[1];
+
+	fo_st = avaliar_fo(BEST2.A, BEST2.B);
+	BEST2.fo = fo_st[0];
+	BEST2.st = fo_st[1];
 
 	int fo1 = avaliar_fo(BEST1.A, BEST1.B)[0],
 		fo2 = avaliar_fo(BEST2.A, BEST2.B)[0];
 
-	if (fo1 <= fo2) {
+	if (BEST1.fo <= BEST2.fo) {
 		BEST = BEST1;
 	}
 	else {
 		BEST = BEST2;
 	}
-
-	A = BEST.A;
-	B = BEST.B;
 }
 
 
@@ -509,12 +511,14 @@ single_machine_instance::solucao_const_busca single_machine_instance::PSO() {
 		solucao_const_busca solu = x_para_solucao(x);
 
 		f_PB[i] = solu.fo;
-		if (f_PB[i] <= f_GB) {
+		if (f_PB[i] < f_GB) {
 			f_GB = f_PB[i];
 			GB = x;
 		}
 	}
 
+	int n_restart = 0,
+		qtde_nao_melhoria = 0;
 	
 	//loop principal
 	int k = 0;
@@ -544,14 +548,14 @@ single_machine_instance::solucao_const_busca single_machine_instance::PSO() {
 			for (int j = 0; j < n; j++) {
 				x[j] = P[i][j];
 			}
-			solucao_const_busca solu = x_para_solucao(x);
+			solucao_const_busca solu = x_para_solucao(x);	//avaliação e decoder
 
-			if (solu.fo <= f_PB[i]) {
+			if (solu.fo < f_PB[i]) {
 				f_PB[i] = solu.fo;
 
 				PB[i] = x;
 
-				if (f_PB[i] <= f_GB) {
+				if (f_PB[i] < f_GB) {
 					f_GB = f_PB[i];
 					GB = x;
 					melhorou = true;
@@ -563,13 +567,18 @@ single_machine_instance::solucao_const_busca single_machine_instance::PSO() {
 		auto fim = chrono::high_resolution_clock::now();
 		elapsed = fim - comeco;
 
-
-		if (elapsed.count() >= 600)
-			break;
-
-		if (!melhorou)
-			P = restart_populacao(m);
-	} while (k++ != 3*n);
+		if (!melhorou) {
+			qtde_nao_melhoria++;
+			if (qtde_nao_melhoria == 10) {
+				P = restart_populacao(m);
+				qtde_nao_melhoria = 0;
+				n_restart++;
+			}
+		}
+		else {
+			qtde_nao_melhoria = 0;
+		}
+	} while (k++ != 5*n && elapsed.count() <= 600 && n_restart <= 10);
 
 
 	return x_para_solucao(GB);
@@ -583,22 +592,21 @@ vector<vector<float>> single_machine_instance::gerar_populacao(int m)
 
 	solucao_const_busca solucao_inicial = heuristica_construtiva_2();
 	auto comeco = chrono::high_resolution_clock::now();
-	int n_iter = 0;
-	int fo = solucao_inicial.fo, fo_antiga = solucao_inicial.fo;
-	chrono::duration<double> elapsed;
-	double episilon = 1.0e-5;
+	int 
+		n_iter = 0,
+		fo_antiga;
+	chrono::duration<float> elapsed;
+	float episilon = 1.0e-5;
 	do
 	{
-		fo_antiga = fo;
+		fo_antiga = solucao_inicial.fo;
 
-		busca_local_com_conjunto(solucao_inicial.A, solucao_inicial.B);
-
-		fo = avaliar_fo(solucao_inicial.A, solucao_inicial.B)[0];
+		busca_local_com_conjunto(solucao_inicial);
 
 		auto fim = chrono::high_resolution_clock::now();
 		elapsed = fim - comeco;
-	} while (elapsed.count() <= 400 && (double)(fo_antiga - fo) / fo_antiga > episilon);
-
+	} while (elapsed.count() <= 400 && (float)(fo_antiga - solucao_inicial.fo) / fo_antiga > episilon);
+	cout << "\tPrimeira Busca Local" << endl;
 	vector<float> x = solucao_para_x(solucao_inicial);
 	vector<vector<float>> P(m);
 
