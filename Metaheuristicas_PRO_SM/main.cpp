@@ -37,8 +37,6 @@ int main() {
 	//EXEMPLO.heuristica_construtiva_2();
 
 	
-
-
 	for (auto nome_arquivo : arquivos) {
 		/*
 		Lendo arquivo
@@ -79,9 +77,9 @@ int main() {
 		cout << "ARQUIVO LIDO COM SUCESSO" << endl;
 
 		double time2;
-		
-		
-		
+
+
+
 		for (auto inst : INSTANCIA) {
 			auto comeco_tudo = chrono::high_resolution_clock::now();
 			cout << nome_arquivo << endl;
@@ -105,7 +103,7 @@ int main() {
 
 				auto fim = chrono::high_resolution_clock::now();
 				elapsed = fim - comeco;
-			} while ( elapsed.count() <= 200 &&  (float)(fo_antiga - solucao_inicial.fo)/ fo_antiga > episilon);
+			} while (elapsed.count() <= 200 && (float)(fo_antiga - solucao_inicial.fo) / fo_antiga > episilon);
 			//cout << "n_inter = " << n_iter << endl;
 			cout << "\t Busca local" << endl << endl;
 
@@ -115,10 +113,9 @@ int main() {
 			inst.escrever_resultados("busca local", solucao_inicial.fo, time2);
 
 			//break;
-		}	
+		}
 		//break;
 	}
-
 
 
 
